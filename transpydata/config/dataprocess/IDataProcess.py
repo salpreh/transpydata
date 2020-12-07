@@ -2,8 +2,10 @@ from typing import List
 from abc import ABCMeta, abstractmethod
 
 from .. import IConfigurable, IProcessor, IResourceAware
+from transpydata.util.decorators import duckyinterface
 
 
+@duckyinterface
 class IDataProcess(IProcessor, IConfigurable, IResourceAware, metaclass=ABCMeta):
     @classmethod
     def __subclasshook__(cls, subclass):
