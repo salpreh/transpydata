@@ -1,7 +1,7 @@
 import logging
 from typing import Type, Union, List
 
-from transpydata.config import IProcessor
+from transpydata.config import IProcessor, IResourceAware
 from transpydata.config.datainput.IDataInput import IDataInput
 from transpydata.config.dataprocess.IDataProcess import IDataProcess
 from transpydata.config.dataoutput.IDataOutput import IDataOutput
@@ -10,6 +10,12 @@ from clinlog.logging import get_logger
 
 
 class TransPy():
+
+    DATAINPUT_PROC_ID = 'datainput'
+    DATAPROCESS_PROC_ID = 'dataprocess'
+    DATAOUTPUT_PROC_ID = 'dataoutput'
+
+
     def __init__(self):
         self.logger = None
         self.log_level = logging.INFO
@@ -21,6 +27,8 @@ class TransPy():
         self._datainput_by_one = False
         self._dataprocess_by_one = False
         self._dataoutput_by_one = False
+
+        self._dataservices_init = self._default_dataservices_init()
 
         self._datainput_source = []
 
@@ -40,13 +48,16 @@ class TransPy():
 
         # Get data input
         processed_data = []
-        if self._dataprocess_by_one:
+        if self._datainput_by_one:
             processed_data = self._single_processing_pipe(self._datainput_source,
                                                           self._datainput_by_one,
                                                           self._dataprocess_by_one,
                                                           self._dataoutput_by_one)
         else:
-            processed_data = self._exec_process(self._datainput, False)
+            processed_data = self._exec_process(self.datainput, False,
+                                                self.DATAINPUT_PROC_ID)
+
+        self._dispose_dataservice(self._datainput, self.DATAINPUT_PROC_ID)
 
         # Process data
         if not self._datainput_by_one and self._dataprocess_by_one:
@@ -58,6 +69,8 @@ class TransPy():
             processed_data = self._exec_process(self._dataprocess, False,
                                                 processed_data)
 
+        self._dispose_dataservice(self._dataprocess, self.DATAPROCESS_PROC_ID)
+
         # Send data to output
         if not self._dataprocess_by_one and self._dataoutput_by_one:
             processed_data = self._single_processing_pipe(processed_data,
@@ -66,18 +79,11 @@ class TransPy():
                                                           self._dataoutput_by_one)
         elif not self._dataoutput_by_one:
             processed_data = self._exec_process(self._dataoutput, False,
-                                              processed_data)
+                                                processed_data)
+
+        self._dispose_dataservice(self._dataoutput, self.DATAOUTPUT_PROC_ID)
 
         return processed_data
-
-    def set_datainput(self, datainput: IDataInput):
-        self._datainput = datainput
-
-    def set_dataprocess(self, dataprocess: IDataProcess):
-        self._dataprocess = dataprocess
-
-    def set_dataoutput(self, dataoutput):
-        self._dataoutput = dataoutput
 
     def _single_processing_pipe(self, input_data: list, datainput_by_one: bool,
                                 dataprocess_by_one: bool, dataoutput_by_one: bool):
@@ -109,8 +115,15 @@ class TransPy():
 
         return collected_data
 
-    def _exec_process(self, processor: IProcessor, process_by_one: bool,
+    def _exec_process(self, processor: IProcessor.IProcessor,
+                      process_by_one: bool, dataprocessor_id: str,
                       process_input: Union[dict,list]=None) -> Union[dict,list]:
+
+        if (not self._dataservices_init[dataprocessor_id]
+            and issubclass(processor, IResourceAware.IResourceAware)):
+            processor.initialize()
+            self._dataservices_init[dataprocessor_id] = True
+
         process_m_name = processor.process_all_method_name()
         if process_by_one:
             process_m_name= processor.process_one_method_name()
@@ -137,9 +150,28 @@ class TransPy():
         if not issubclass(self._dataoutput, IDataOutput):
             self._raise_processor_not_implemented(self._dataoutput, IDataOutput)
 
+    def _dispose_dataservices(self):
+        self._dispose_dataservice(self._datainput, self.DATAINPUT_PROC_ID)
+        self._dispose_dataservice(self._dataprocess, self.DATAPROCESS_PROC_ID)
+        self._dispose_dataservice(self._dataoutput, self.DATAOUTPUT_PROC_ID)
+
+    def _dispose_dataservice(self, dataservice: IResourceAware.IResourceAware,
+                             dataservice_id: str):
+        if self._dataservices_init[dataservice_id]:
+            dataservice.dispose()
+            self._dataservices_init[dataservice_id] = False
+
     def _raise_processor_not_implemented(self, datainput, cls: Type):
             raise RuntimeError(
                 "'{}' class does not implement methods or inherit from class '{}'"
                 .format(datainput.__class__.__name__,
                         cls.__name__)
             )
+
+    def _default_dataservices_init(self) -> dict:
+        return {
+            self.DATAINPUT_PROC_ID: False,
+            self.DATAPROCESS_PROC_ID: False,
+            self.DATAOUTPUT_PROC_ID: False
+        }
+
