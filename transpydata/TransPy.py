@@ -106,7 +106,7 @@ class TransPy():
                                                 self.DATAPROCESS_PROC_ID,
                                                 piped_data)
 
-            if datainput_by_one and not self._dataprocess_by_one:
+            if datainput_by_one and not dataprocess_by_one:
                 collected_data.append(piped_data)
                 continue
 
