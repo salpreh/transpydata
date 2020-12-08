@@ -20,9 +20,9 @@ class TransPy():
         self.logger = None
         self.log_level = logging.INFO
 
-        self._datainput = None # type: IDataInput
-        self._dataprocess = None # type: IDataProcess
-        self._dataoutput = None # type: IDataOutput
+        self.datainput = None # type: IDataInput
+        self.dataprocess = None # type: IDataProcess
+        self.dataoutput = None # type: IDataOutput
 
         self._datainput_by_one = False
         self._dataprocess_by_one = False
@@ -35,7 +35,7 @@ class TransPy():
     def configure(self, config: dict):
         self._datainput_by_one = config.get('datainput_by_one',
                                             self._datainput_by_one)
-        self._datainput_by_one = config.get('datainput_source',
+        self._datainput_source = config.get('datainput_source',
                                             self._datainput_source)
         self._dataprocess_by_one = config.get('dataprocess_by_one',
                                               self._dataprocess_by_one)
@@ -57,7 +57,7 @@ class TransPy():
             processed_data = self._exec_process(self.datainput, False,
                                                 self.DATAINPUT_PROC_ID)
 
-        self._dispose_dataservice(self._datainput, self.DATAINPUT_PROC_ID)
+        self._dispose_dataservice(self.datainput, self.DATAINPUT_PROC_ID)
 
         # Process data
         if not self._datainput_by_one and self._dataprocess_by_one:
@@ -66,10 +66,11 @@ class TransPy():
                                                           self._dataprocess_by_one,
                                                           self._dataoutput_by_one)
         elif not self._dataprocess_by_one:
-            processed_data = self._exec_process(self._dataprocess, False,
+            processed_data = self._exec_process(self.dataprocess, False,
+                                                self.DATAPROCESS_PROC_ID,
                                                 processed_data)
 
-        self._dispose_dataservice(self._dataprocess, self.DATAPROCESS_PROC_ID)
+        self._dispose_dataservice(self.dataprocess, self.DATAPROCESS_PROC_ID)
 
         # Send data to output
         if not self._dataprocess_by_one and self._dataoutput_by_one:
@@ -78,10 +79,11 @@ class TransPy():
                                                           False,
                                                           self._dataoutput_by_one)
         elif not self._dataoutput_by_one:
-            processed_data = self._exec_process(self._dataoutput, False,
+            processed_data = self._exec_process(self.dataoutput, False,
+                                                self.DATAOUTPUT_PROC_ID,
                                                 processed_data)
 
-        self._dispose_dataservice(self._dataoutput, self.DATAOUTPUT_PROC_ID)
+        self._dispose_dataservice(self.dataoutput, self.DATAOUTPUT_PROC_ID)
 
         return processed_data
 
@@ -93,34 +95,37 @@ class TransPy():
             piped_data = input_datum
 
             if datainput_by_one:
-                piped_data = self._exec_process(self._datainput,
+                piped_data = self._exec_process(self.datainput,
                                                 datainput_by_one,
+                                                self.DATAINPUT_PROC_ID,
                                                 piped_data)
 
             if dataprocess_by_one:
-                piped_data = self._exec_process(self._dataprocess,
+                piped_data = self._exec_process(self.dataprocess,
                                                 dataprocess_by_one,
+                                                self.DATAPROCESS_PROC_ID,
                                                 piped_data)
 
-            if datainput_by_one and not self._dataoutput_by_one:
+            if datainput_by_one and not self._dataprocess_by_one:
                 collected_data.append(piped_data)
                 continue
 
             if dataoutput_by_one:
-                piped_data = self._exec_process(self._dataoutput,
+                piped_data = self._exec_process(self.dataoutput,
                                                 dataoutput_by_one,
+                                                self.DATAOUTPUT_PROC_ID,
                                                 piped_data)
 
             collected_data.append(piped_data)
 
         return collected_data
 
-    def _exec_process(self, processor: IProcessor.IProcessor,
+    def _exec_process(self, processor: IProcessor,
                       process_by_one: bool, dataprocessor_id: str,
                       process_input: Union[dict,list]=None) -> Union[dict,list]:
 
         if (not self._dataservices_init[dataprocessor_id]
-            and issubclass(processor, IResourceAware.IResourceAware)):
+            and isinstance(processor, IResourceAware)):
             processor.initialize()
             self._dataservices_init[dataprocessor_id] = True
 
@@ -141,21 +146,21 @@ class TransPy():
         self.logger.setLevel(self.log_level)
 
     def _processors_checks(self):
-        if not issubclass(self._datainput, IDataInput):
-            self._raise_processor_not_implemented(self._datainput, IDataInput)
+        if not isinstance(self.datainput, IDataInput):
+            self._raise_processor_not_implemented(self.datainput, IDataInput)
 
-        if not issubclass(self._dataprocess, IDataProcess):
-            self._raise_processor_not_implemented(self._dataprocess, IDataProcess)
+        if not isinstance(self.dataprocess, IDataProcess):
+            self._raise_processor_not_implemented(self.dataprocess, IDataProcess)
 
-        if not issubclass(self._dataoutput, IDataOutput):
-            self._raise_processor_not_implemented(self._dataoutput, IDataOutput)
+        if not isinstance(self.dataoutput, IDataOutput):
+            self._raise_processor_not_implemented(self.dataoutput, IDataOutput)
 
     def _dispose_dataservices(self):
-        self._dispose_dataservice(self._datainput, self.DATAINPUT_PROC_ID)
-        self._dispose_dataservice(self._dataprocess, self.DATAPROCESS_PROC_ID)
-        self._dispose_dataservice(self._dataoutput, self.DATAOUTPUT_PROC_ID)
+        self._dispose_dataservice(self.datainput, self.DATAINPUT_PROC_ID)
+        self._dispose_dataservice(self.dataprocess, self.DATAPROCESS_PROC_ID)
+        self._dispose_dataservice(self.dataoutput, self.DATAOUTPUT_PROC_ID)
 
-    def _dispose_dataservice(self, dataservice: IResourceAware.IResourceAware,
+    def _dispose_dataservice(self, dataservice: IResourceAware,
                              dataservice_id: str):
         if self._dataservices_init[dataservice_id]:
             dataservice.dispose()
