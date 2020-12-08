@@ -1,7 +1,7 @@
 from typing import List
 from abc import ABCMeta, abstractmethod
 
-from .. import IConfigurable, IProcessor, IResourceAware
+from transpydata.config import IConfigurable, IProcessor, IResourceAware
 from transpydata.util.decorators import duckyinterface
 
 
