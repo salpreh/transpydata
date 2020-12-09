@@ -8,6 +8,7 @@ doq = "*"
 twine = "*"
 
 [packages]
+mysql-connector-python = "*"
 clinlog = "*"
 
 [requires]
