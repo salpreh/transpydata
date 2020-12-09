@@ -1,6 +1,10 @@
 #Python
 **/__pycache__/
+*.egg-info/
 
 # IDE
 Session.vim
 .vscode/
+
+# Project realted
+setup/
