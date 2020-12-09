@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - ./docker/mysql/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: 'TryingTh1ngs'
+      MYSQL_DATABASE: 'migration'
+
+  dummy_server:
+    build:
+      context: ./docker/dummy_server
+    volumes:
+      - ./docker/dummy_server/index.php:/var/www/html/index.php
+    ports:
+      - 8008:80
+
