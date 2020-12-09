@@ -109,6 +109,8 @@ if __name__ == '__main__':
     main()
 ```
 
+Full working example could be found at `examples/mysql_to_http/`, there is a [docker-compose](https://docs.docker.com/compose/gettingstarted/#step-6-re-build-and-run-the-app-with-compose) to launch an instance of mysql and a webserver.
+
 ## Custom data services
 For now you can check the interfaces `IDataInput`, `IDataProcess` and `IDataOutput` to see what needs to be implemented in a custom data service.
 
