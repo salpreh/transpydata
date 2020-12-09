@@ -1,0 +1,7 @@
+__title__ = 'transpydata'
+__description__ = 'Framework for managing migrations'
+__url__ = 'https://github.com/salpreh/transpydata'
+__version__ = '0.1.0'
+__author__ = 'salpreh'
+__author_email__ = 'salva.perez46@gmail.com'
+__license__ = 'Apache 2.0'
