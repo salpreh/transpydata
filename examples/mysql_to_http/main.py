@@ -2,7 +2,7 @@ import json
 
 from transpydata import TransPy
 from transpydata.config.datainput.MysqlDataInput import MysqlDataInput
-from transpydata.config.dataprocess.NoneDataProcess import NoneDataProcess
+from transpydata.config.dataprocess.TranslateDataProcess import TranslateDataProcess
 from transpydata.config.dataoutput.RequestDataOutput import RequestDataOutput
 
 
@@ -30,7 +30,17 @@ def main():
     mysql_input.configure(config)
 
     # Configure process
-    none_process = NoneDataProcess()
+    trans_process = TranslateDataProcess()
+    trans_process.configure({
+        'translations': {
+            'staff_Id': 'staff_id',
+            'module_Id': 'module_id'
+        },
+        'transformations': {
+            'staff_Id': lambda v: v[1:],
+            'module_Id': lambda v: v[-3:]
+        }
+    })
 
     # Configure output
     request_output = RequestDataOutput()
@@ -49,11 +59,11 @@ def main():
     # Configure TransPy
     trans_py = TransPy()
     trans_py.datainput = mysql_input
-    trans_py.dataprocess = none_process
+    trans_py.dataprocess = trans_process
     trans_py.dataoutput = request_output
 
     res = trans_py.run()
-    print(json.dumps(res))
+    print(json.dumps(res, indent=4))
 
 if __name__ == '__main__':
     main()

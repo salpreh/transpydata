@@ -1,12 +1,13 @@
 import logging
 from typing import Type, Union, List
 
+from clinlog.logging import get_logger
+
 from transpydata.config import IProcessor, IResourceAware
 from transpydata.config.datainput.IDataInput import IDataInput
 from transpydata.config.dataprocess.IDataProcess import IDataProcess
 from transpydata.config.dataoutput.IDataOutput import IDataOutput
 
-from clinlog.logging import get_logger
 
 
 class TransPy():
@@ -179,4 +180,3 @@ class TransPy():
             self.DATAPROCESS_PROC_ID: False,
             self.DATAOUTPUT_PROC_ID: False
         }
-
