@@ -25,6 +25,8 @@ class TranslateDataProcess(IDataProcess):
         self._translations = {}
         self._transformations = {}
 
+        if config: self.configure(config)
+
     def configure(self, config: dict):
         self._exclude = config.get('exclude', self._exclude)
         self._translations = config.get('translations', self._translations)
