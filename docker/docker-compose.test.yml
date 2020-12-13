@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - ../tests/fixtures/mysql/init.sql:/docker-entrypoint-initdb.d/dump.sql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_USER: 'testuser'
+      MYSQL_PASSWORD: 't3stPass'
+      MYSQL_ROOT_PASSWORD: 't3stPass'
+      MYSQL_DATABASE: 'migration'
+
