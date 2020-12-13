@@ -20,7 +20,7 @@ class RequestDataOutput(IDataOutput):
     }
     """
 
-    URL_PARSE_RX = re.compile('{([^}])*}') # type: re.Pattern
+    URL_PARSE_RX = re.compile('{([^}]*)}') # type: re.Pattern
 
     def __init__(self, config: dict = None):
         self._config = config
@@ -105,7 +105,7 @@ class RequestDataOutput(IDataOutput):
             var_map = {var:data[var] for var in self._url_vars}
 
             url = self._url
-            for var, val in var_map:
+            for var, val in var_map.items():
                 url = re.sub(f'{{{var}}}', val, url)
 
                 # For now we are not going to sendig values that are used in
@@ -131,4 +131,4 @@ class RequestDataOutput(IDataOutput):
         return q_params
 
     def _process_url(self):
-        self._url_vars = self.URL_PARSE_RX.find_all()
+        self._url_vars = self.URL_PARSE_RX.findall(self._url)
