@@ -29,8 +29,6 @@ class TestRequestDataOutput(unittest.TestCase):
         self.assertEqual(config['url'], req_data['url'])
         self.assertEqual(config['headers'], req_data['headers'])
 
-        self._remove_mocked_imports()
-
     def test_send_dynamic_url(self):
         request_mock = self._get_requests_module_mock()
         request_output = self._get_request_data_output_instance(request_mock)
@@ -53,8 +51,6 @@ class TestRequestDataOutput(unittest.TestCase):
         self.assertEqual(data[config['query_params'][0]],
                          req_data['query_params'][config['query_params'][0]])
 
-        self._remove_mocked_imports()
-
     def test_json_response_parse(self):
         request_mock = self._get_requests_module_mock()
         request_output = self._get_request_data_output_instance(request_mock)
@@ -74,8 +70,6 @@ class TestRequestDataOutput(unittest.TestCase):
         request_mock.request.assert_called_once()
         request_mock.request.return_value.json.assert_called_once()
 
-        self._remove_mocked_imports()
-
     def _get_requests_module_mock(self, code=200, content='Message') -> mock.Mock:
         requests_mock = mock.Mock()
         requests_mock.request.return_value.status_code = code
@@ -84,6 +78,11 @@ class TestRequestDataOutput(unittest.TestCase):
         return requests_mock
 
     def _get_request_data_output_instance(self, requests_mock: mock.Mock) -> IDataOutput:
+        if 'requests' in sys.modules:
+            del(sys.modules['requests'])
+        if 'transpydata.config.dataoutput.RequestDataOutput' in sys.modules:
+            del(sys.modules['transpydata.config.dataoutput.RequestDataOutput'])
+
         sys.modules['requests'] = requests_mock
         from transpydata.config.dataoutput.RequestDataOutput import RequestDataOutput
 
@@ -108,7 +107,3 @@ class TestRequestDataOutput(unittest.TestCase):
             'weapon': 'Ace of spades',
             'class': 'hunters'
         }
-
-    def _remove_mocked_imports(self):
-        del(sys.modules['requests'])
-        del(sys.modules['transpydata.config.dataoutput.RequestDataOutput'])
