@@ -28,7 +28,7 @@ jobs:
         run: docker-compose -f docker/docker-compose.test.yml up -d
       - name: Wait for containers
         run: |
-          bin/wait-for-it.sh localhost:3306
+          bin/wait-for-it.sh -h localhost -p 3306
       - name: Run tests
         run: pipenv run python -m unittest discover -s tests
       - name: Build and publish

@@ -38,7 +38,7 @@ class TestMysqlDataInput(unittest.TestCase):
         'db_config': {
             'user': 'testuser',
             'password': 't3stPass',
-            'host': 'localhost',
+            'host': '127.0.0.1',
             'port': '3306',
             'database': 'migration'
         },
