@@ -7,9 +7,6 @@ from transpydata.util.decorators import duckyinterface
 
 @duckyinterface
 class IDataProcess(IProcessor, IConfigurable, IResourceAware, metaclass=ABCMeta):
-    @classmethod
-    def __subclasshook__(cls, subclass):
-        pass #TODO: Add method checks
 
     def process_one_method_name(self) -> str:
         return 'process_one'

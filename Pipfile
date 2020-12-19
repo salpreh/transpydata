@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 doq = "*"
 twine = "*"
+pylint = "*"
 
 [packages]
 mysql-connector-python = "*"
