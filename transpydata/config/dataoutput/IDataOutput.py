@@ -1,12 +1,16 @@
 from typing import List
 from abc import ABCMeta, abstractmethod
+from logging import getLogger, Logger, NullHandler
 
-from transpydata.config import IConfigurable, IProcessor, IResourceAware
+from transpydata.config import IDataService
 from transpydata.util.decorators import duckyinterface
 
 
 @duckyinterface
-class IDataOutput(IProcessor, IConfigurable, IResourceAware, metaclass=ABCMeta):
+class IDataOutput(IDataService, metaclass=ABCMeta):
+
+    def __init__(self):
+        super().__init__()
 
     def process_one_method_name(self) -> str:
         return 'send_one'
@@ -41,7 +45,7 @@ class IDataOutput(IProcessor, IConfigurable, IResourceAware, metaclass=ABCMeta):
         raise NotImplementedError
 
     def initialize(self):
-        pass
+        super().initialize()
 
     def dispose(self):
         pass
