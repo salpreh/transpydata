@@ -7,6 +7,7 @@ class TranslateDataProcess(IDataProcess):
     """ DataProcess to change data fields names and preform tranformations on the
         values. Config dict foramat:
         {
+            'exclude': list, # List of input fields to exclude
             'translations': dict, # Dict where keys are field names on
                 input (generated data of DataInput) and values are a new name
                 for that field
@@ -20,10 +21,14 @@ class TranslateDataProcess(IDataProcess):
     def __init__(self, config: dict=None):
         self._config = config
 
+        self._exclude = []
         self._translations = {}
         self._transformations = {}
 
+        if config: self.configure(config)
+
     def configure(self, config: dict):
+        self._exclude = config.get('exclude', self._exclude)
         self._translations = config.get('translations', self._translations)
         self._transformations = config.get('transformations',
                                            self._transformations)
@@ -39,6 +44,7 @@ class TranslateDataProcess(IDataProcess):
         """
         p_data = {}
         for k, v in data.items():
+            if k in self._exclude: continue
             p_key, p_val = self._process_field(k, v)
             p_data[p_key] = p_val
 

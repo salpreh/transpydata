@@ -100,7 +100,7 @@ class MysqlDataInput(IDataInput):
     def _fetch_one_query(self, query: str, params: dict) -> dict:
         try:
             cursor = self._get_db_cursor()
-            cursor.execute(query)
+            cursor.execute(query, params)
 
             return cursor.fetchone()
 
