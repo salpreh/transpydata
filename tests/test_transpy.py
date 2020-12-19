@@ -4,9 +4,9 @@ import unittest.mock as mock
 
 
 from transpydata.TransPy import TransPy
-from transpydata.config.datainput.IDataInput import IDataInput
-from transpydata.config.dataprocess.IDataProcess import IDataProcess
-from transpydata.config.dataoutput.IDataOutput import IDataOutput
+from transpydata.config.datainput import IDataInput
+from transpydata.config.dataprocess import IDataProcess
+from transpydata.config.dataoutput import IDataOutput
 
 class TestTransPy(unittest.TestCase):
 

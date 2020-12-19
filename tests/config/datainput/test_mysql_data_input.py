@@ -4,7 +4,7 @@ import os
 import unittest
 import unittest.mock as mock
 
-from transpydata.config.datainput.MysqlDataInput import MysqlDataInput
+from transpydata.config.datainput import MysqlDataInput
 
 
 class TestMysqlDataInput(unittest.TestCase):
@@ -23,6 +23,8 @@ class TestMysqlDataInput(unittest.TestCase):
             'credits': 10
         }, data)
 
+        mysql_input.dispose()
+
     def test_validate_get_all_query_call(self):
         mysql_input = MysqlDataInput()
         config = self._get_input_config()
@@ -33,6 +35,8 @@ class TestMysqlDataInput(unittest.TestCase):
         data = mysql_input.get_all()
 
         self.assertEqual(len(data), 3)
+
+        mysql_input.dispose()
 
     def _get_input_config(self):
         return {

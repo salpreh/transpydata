@@ -35,5 +35,5 @@ setup(
     url=about['__url__'],
     install_requires=requires,
     license=about['__license__'],
-    packages=find_packages(exclude=('tests', 'assets', 'venv', 'examples'))
+    packages=find_packages(exclude=('tests', 'tests.*', 'assets', 'venv', 'examples'))
 )

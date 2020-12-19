@@ -1,7 +1,7 @@
 import unittest
 import re
 
-from transpydata.config.dataprocess.TranslateDataProcess import TranslateDataProcess
+from transpydata.config.dataprocess import TranslateDataProcess
 
 
 class TestTranslateDataProcess(unittest.TestCase):
