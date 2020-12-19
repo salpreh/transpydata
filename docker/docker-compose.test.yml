@@ -7,9 +7,22 @@ services:
       - ../tests/fixtures/mysql/init.sql:/docker-entrypoint-initdb.d/dump.sql
     ports:
       - 3306:3306
-    environment:
-      MYSQL_USER: 'testuser'
-      MYSQL_PASSWORD: 't3stPass'
-      MYSQL_ROOT_PASSWORD: 't3stPass'
-      MYSQL_DATABASE: 'migration'
-
+    env_file:
+      - ../tests/.env.tests
+    #environment:
+      #MYSQL_USER: 'testuser'
+      #MYSQL_PASSWORD: 't3stPass'
+      #MYSQL_ROOT_PASSWORD: 't3stPass'
+      #MYSQL_DATABASE: 'migration'
+  python:
+    build:
+      context: ../
+      dockerfile: ./docker/transpydata/Dockerfile
+    volumes: 
+      - ../tests/:/code/tests
+      - ../transpydata/:/code/transpydata
+    env_file:
+      - ../tests/.env.tests
+    command: ["pipenv", "run", "python", "-m", "unittest", "discover", "-s", "tests"]
+    depends_on:
+      - mysql

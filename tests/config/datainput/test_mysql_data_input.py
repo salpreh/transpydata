@@ -1,5 +1,6 @@
 from typing import Tuple
 import sys
+import os
 import unittest
 import unittest.mock as mock
 
@@ -36,11 +37,11 @@ class TestMysqlDataInput(unittest.TestCase):
     def _get_input_config(self):
         return {
         'db_config': {
-            'user': 'testuser',
-            'password': 't3stPass',
-            'host': '127.0.0.1',
+            'user': os.environ['MYSQL_USER'],
+            'password': os.environ['MYSQL_PASSWORD'],
+            'host': 'mysql',
             'port': '3306',
-            'database': 'migration'
+            'database': os.environ['MYSQL_DATABASE']
         },
         'get_one_query': 'SELECT * FROM module WHERE credits <= %(credits)s AND module_Id = %(id)s',
         'get_all_query': 'SELECT * FROM module WHERE credits <= %(credits)s',
