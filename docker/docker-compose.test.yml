@@ -9,11 +9,6 @@ services:
       - 3306:3306
     env_file:
       - ../tests/.env.tests
-    #environment:
-      #MYSQL_USER: 'testuser'
-      #MYSQL_PASSWORD: 't3stPass'
-      #MYSQL_ROOT_PASSWORD: 't3stPass'
-      #MYSQL_DATABASE: 'migration'
   python:
     build:
       context: ../

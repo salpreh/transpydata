@@ -26,7 +26,7 @@ requires = [
 ]
 setup(
     name=about['__title__'],
-    version=about['__test_version__'],
+    version=about['__version__'],
     description=about['__description__'],
     long_description=readme,
     long_description_content_type='text/markdown',
