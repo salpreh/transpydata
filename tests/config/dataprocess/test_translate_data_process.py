@@ -16,6 +16,8 @@ class TestTranslateDataProcess(unittest.TestCase):
         data = self._get_test_data()
 
         translate_process = TranslateDataProcess(config)
+        translate_process.initialize()
+
         res = translate_process.process_one(data)
 
         name = data['name']
@@ -38,6 +40,8 @@ class TestTranslateDataProcess(unittest.TestCase):
         data = self._get_test_data()
 
         translate_process = TranslateDataProcess(config)
+        translate_process.initialize()
+
         res = translate_process.process_one(data)
 
         data['name'] = 'Cade'
@@ -51,6 +55,7 @@ class TestTranslateDataProcess(unittest.TestCase):
         data = self._get_test_data()
 
         translate_process = TranslateDataProcess(config)
+        translate_process.initialize()
         res = translate_process.process_one(data)
 
         del(data['category'])
