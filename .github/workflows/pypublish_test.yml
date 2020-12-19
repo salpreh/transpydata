@@ -26,8 +26,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pipenv
           pipenv install --dev
-      - name: Run tests
-        run: pipenv run python -m unittest discover -s tests
       - name: Build and publish
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_TEST_USERNAME }}

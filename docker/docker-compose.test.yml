@@ -21,8 +21,11 @@ services:
     volumes: 
       - ../tests/:/code/tests
       - ../transpydata/:/code/transpydata
+      - ../bin/wait-for.sh:/code/wait-for.sh
     env_file:
       - ../tests/.env.tests
-    command: ["pipenv", "run", "python", "-m", "unittest", "discover", "-s", "tests"]
+    command: >
+      /bin/sh -c "./wait-for.sh mysql:3306 -t 20 &&
+                  pipenv run python -m unittest discover -s tests"
     depends_on:
       - mysql
