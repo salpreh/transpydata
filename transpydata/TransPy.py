@@ -4,9 +4,9 @@ from typing import Type, Union, List
 from clinlog.logging import get_logger
 
 from transpydata.config import IProcessor, IResourceAware
-from transpydata.config.datainput.IDataInput import IDataInput
-from transpydata.config.dataprocess.IDataProcess import IDataProcess
-from transpydata.config.dataoutput.IDataOutput import IDataOutput
+from transpydata.config.datainput import IDataInput
+from transpydata.config.dataprocess import IDataProcess
+from transpydata.config.dataoutput import IDataOutput
 
 
 

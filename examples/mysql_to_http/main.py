@@ -1,9 +1,9 @@
 import json
 
 from transpydata import TransPy
-from transpydata.config.datainput.MysqlDataInput import MysqlDataInput
-from transpydata.config.dataprocess.TranslateDataProcess import TranslateDataProcess
-from transpydata.config.dataoutput.RequestDataOutput import RequestDataOutput
+from transpydata.config.datainput import MysqlDataInput
+from transpydata.config.dataprocess import TranslateDataProcess
+from transpydata.config.dataoutput import RequestDataOutput
 
 
 def main():

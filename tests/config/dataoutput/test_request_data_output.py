@@ -4,7 +4,7 @@ import json
 import unittest
 import unittest.mock as mock
 
-from transpydata.config.dataoutput.IDataOutput import IDataOutput
+from transpydata.config.dataoutput import IDataOutput
 
 
 class TestRequestDataOutput(unittest.TestCase):
