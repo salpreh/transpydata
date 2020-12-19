@@ -57,7 +57,6 @@ class TransPy():
                                                           self._dataprocess_by_one,
                                                           self._dataoutput_by_one)
         else:
-            self.logger.info("Datainput input data lenght: %s", len(self.datainput))
             processed_data = self._exec_process(self.datainput, False,
                                                 self.DATAINPUT_PROC_ID)
             self.logger.info("Datainput result lenght: %s", len(processed_data))
@@ -162,6 +161,15 @@ class TransPy():
         if not self.logger:
             self.logger = get_logger()
         self.logger.setLevel(self.log_level)
+
+        if self.datainput.logger is None:
+            self.datainput.logger = self.logger
+
+        if self.dataprocess.logger is None:
+            self.dataprocess.logger = self.logger
+
+        if self.dataoutput.logger is None:
+            self.dataoutput.logger = self.logger
 
     def _processors_checks(self):
         if not isinstance(self.datainput, IDataInput):
