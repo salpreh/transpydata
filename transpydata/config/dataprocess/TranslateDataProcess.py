@@ -19,6 +19,7 @@ class TranslateDataProcess(IDataProcess):
 
 
     def __init__(self, config: dict=None):
+        super().__init__()
         self._config = config
 
         self._exclude = []
