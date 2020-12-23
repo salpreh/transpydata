@@ -1,4 +1,5 @@
 from typing import Tuple
+from logging import getLogger, NullHandler, Logger
 import unittest
 import unittest.mock as mock
 
@@ -135,8 +136,6 @@ class TestTransPy(unittest.TestCase):
 
         self.assertListEqual(result, dataoutput_returns)
 
-
-
     def test_process_and_output_by_one(self):
         datainput, dataprocess, dataoutput = self._get_mocked_dataservices()
 
@@ -175,6 +174,31 @@ class TestTransPy(unittest.TestCase):
 
         self.assertListEqual(result, dataoutput_returns)
 
+    def test_logging(self):
+        datainput, dataprocess, dataoutput = self._get_mocked_dataservices()
+
+        datainput_returns = ['dinA', 'dinB']
+        dataprocess_returns = ['dprA', 'dprB']
+        dataoutput_returns = ['doutA', 'doutB']
+        datainput.get_all.return_value = datainput_returns
+        dataprocess.process_one.side_effect = dataprocess_returns
+        dataoutput.send_one.side_effect = dataoutput_returns
+
+        config = {
+            'datainput_by_one': False,
+            'dataprocess_by_one': False,
+            'dataoutput_by_one': False
+        }
+
+        trans_py = self._get_transpy_instance(datainput, dataprocess,
+                                             dataoutput, config)
+
+        mock_logger = mock.create_autospec(Logger)
+        trans_py.logger = mock_logger
+
+        result = trans_py.run()
+
+        mock_logger.info.assert_called()
 
     def _get_mocked_dataservices(self) -> Tuple[mock.NonCallableMagicMock,
                                                 mock.NonCallableMagicMock,
@@ -196,6 +220,8 @@ class TestTransPy(unittest.TestCase):
     def _get_transpy_instance(self, datainput, dataprocess,
                              dataoutput, config: dict = None) -> TransPy:
         trans_py = TransPy()
+        trans_py.logger = self._get_null_logger()
+
         trans_py.datainput = datainput
         trans_py.dataprocess = dataprocess
         trans_py.dataoutput = dataoutput
@@ -204,4 +230,11 @@ class TestTransPy(unittest.TestCase):
             trans_py.configure(config)
 
         return trans_py
+
+    def _get_null_logger(self):
+        logger = getLogger('dummy')
+        if not logger.hasHandlers():
+            logger.addHandler(NullHandler())
+
+        return logger
 
