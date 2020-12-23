@@ -1,0 +1,18 @@
+name: Pull request checks
+
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run app tests
+        run: docker-compose -f docker/docker-compose.test.yml up --exit-code-from python
+
