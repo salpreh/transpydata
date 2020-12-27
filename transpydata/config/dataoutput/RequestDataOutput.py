@@ -3,7 +3,7 @@ import json
 from typing import List
 from requests import request
 
-from .IDataOutput import IDataOutput
+from . import IDataOutput
 
 
 class RequestDataOutput(IDataOutput):
