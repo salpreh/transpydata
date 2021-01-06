@@ -9,6 +9,37 @@ services:
       - 3306:3306
     env_file:
       - ../tests/.env.tests
+
+  localstack:
+    image: localstack/localstack
+    ports:
+      - 4566:4566
+    environment:
+      - SERVICES=sqs
+      - DEFAULT_REGION=eu-west-1
+    healthcheck:
+      test: "curl localhost:4566/health | grep '\"sqs\": \"start\"' || exit 1"
+      interval: 30s
+      timeout: 8s
+      retries: 5
+
+  aws-cli:
+    #image: amazon/aws-cli
+    image: mesosphere/aws-cli
+    volumes:
+      - ../bin/wait-for.sh:/usr/bin/wait-for.sh
+    env_file:
+      - ../tests/.env.tests
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "
+      /bin/sleep 15 &&
+      aws --endpoint-url=http://localstack:4566 --no-paginate sqs create-queue \
+        --queue-name $$SQS_TEST_QUEUE &&
+      /bin/sleep 3600"
+    depends_on:
+      - localstack
+
   python:
     build:
       context: ../
@@ -24,3 +55,5 @@ services:
                   pipenv run python -m unittest discover -s tests"
     depends_on:
       - mysql
+      - localstack
+      - aws-cli
