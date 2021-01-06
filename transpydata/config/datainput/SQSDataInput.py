@@ -20,9 +20,13 @@ class SQSDataInput(IDataInput):
         'secret': str, # AWS client secret (optional, could be providad as env
             variable or default config file
             https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables)
+        'region': str, # AWS region (optional, could be providad as env
+            variable or default config file
+            https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables)
         'session_token': str, # AWS session token (optional, could be providad as env
             variable or default config file
             https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables)
+        'endpoint_url': str, # AWS endpoint url config param. Mostly for local and development setups
         'parse_body_as_json': bool,
         'flatten_attributes': bool, # Put SQS attributes as first level message
             fields (only works if 'parse_body_as_json' is enabled).
@@ -35,6 +39,9 @@ class SQSDataInput(IDataInput):
     MAX_BATCH_SIZE = 10 # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs.html#SQS.Client.receive_message
     MAX_RETRIES = 3
 
+    BODY_KEY = 'message'
+    ATTR_KEY = 'attributes'
+
     def __init__(self, config: dict = None):
         self.url = None
         self.flatten_attributes = False
@@ -42,10 +49,13 @@ class SQSDataInput(IDataInput):
 
         self._client_id = ''
         self._secret = ''
+        self._region = ''
         self._session_token = ''
+        self._endpoint_url = ''
         self._sqs_client = None
 
-        self.configure(config)
+        if config:
+            self.configure(config)
 
     def configure(self, config: dict):
         self.url = config.get('url')
@@ -57,13 +67,14 @@ class SQSDataInput(IDataInput):
 
         self._client_id = config.get('client_id', self._client_id)
         self._secret = config.get('secret', self._secret)
+        self._region = config.get('region', self._region)
         self._session_token = config.get('session_token', self._session_token)
+        self._endpoint_url = config.get('endpoint_url', self._endpoint_url)
 
-
-    def get_one(self, data: dict) -> dict:
+    def get_one(self, data: dict = {}) -> dict:
         sqs_req = {
             'QueueUrl': self.url,
-            'MessageAttributeNames': '.*',
+            'MessageAttributeNames': ['All'],
             'MaxNumberOfMessages': 1
         }
         sqs_client = self._get_sqs_client()
@@ -76,7 +87,7 @@ class SQSDataInput(IDataInput):
         return {}
 
     def get_all(self) -> List[dict]:
-        req_attempt_id = uuid4()
+        req_attempt_id = str(uuid4())
         res_messages = True
         retries = 0
         sqs_client = self._get_sqs_client()
@@ -84,12 +95,12 @@ class SQSDataInput(IDataInput):
         result = []
         while res_messages and retries < self.MAX_RETRIES:
             try:
-                sqs_res = sqs_client.receive_message({
-                    'QueueUrl': self.url,
-                    'MessageAttributeNames': '.*',
-                    'MaxNumberOfMessages': self.MAX_BATCH_SIZE,
-                    'ReceiveRequestAttemptId': req_attempt_id
-                })
+                sqs_res = sqs_client.receive_message(
+                    QueueUrl = self.url,
+                    MessageAttributeNames = ['All'],
+                    MaxNumberOfMessages = self.MAX_BATCH_SIZE,
+                    ReceiveRequestAttemptId = req_attempt_id
+                )
             except ClientError:
                 retries += 1
                 continue
@@ -99,7 +110,7 @@ class SQSDataInput(IDataInput):
 
             res_messages = len(msgs)
             retries = 0
-            req_attempt_id = uuid4()
+            req_attempt_id = str(uuid4())
 
         if retries > self.MAX_RETRIES:
             self.logger.warn('Finished processing because max retries reached')
@@ -108,6 +119,8 @@ class SQSDataInput(IDataInput):
 
     def _process_response(self, sqs_res: dict) -> List[dict]:
         proc_res = []
+        if not 'Messages' in sqs_res: return []
+
         for msg in sqs_res['Messages']:
             proc_res.append(self._process_msg(msg))
 
@@ -116,20 +129,20 @@ class SQSDataInput(IDataInput):
     def _process_msg(self, msg: dict) -> dict:
         if not self.parse_body_as_json:
             return {
-                'message': msg['Body'],
-                'attributes': self._process_attributes(msg['MessageAttributes'])
+                self.BODY_KEY: msg['Body'],
+                self.ATTR_KEY: self._process_attributes(msg['MessageAttributes'])
             }
 
         msg_body = json.loads(msg['Body'])
-        msg_attr = self._process_attributes (msg['MessageAttributes'])
+        msg_attr = self._process_attributes(msg['MessageAttributes'])
 
         proc_msg = {}
         if self.flatten_attributes:
             proc_msg = {**msg_body, **msg_attr}
         else:
             proc_msg = {
-                'message': msg_body,
-                'attributes': msg_attr
+                self.BODY_KEY: msg_body,
+                self.ATTR_KEY: msg_attr
             }
 
         return proc_msg
@@ -154,10 +167,16 @@ class SQSDataInput(IDataInput):
         config = {}
         if self._client_id and self._secret:
             config['aws_access_key_id'] = self._client_id
-            config['aws_secret_access'] = self._secret
+            config['aws_secret_access_key'] = self._secret
+
+        if self._region:
+            config['region_name'] = self._region
 
         if self._session_token:
             config['aws_session_token'] = self._session_token
+
+        if self._endpoint_url:
+            config['endpoint_url'] = self._endpoint_url
 
         self._sqs_client = boto3.client('sqs', **config)
 

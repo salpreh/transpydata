@@ -19,9 +19,13 @@ class SQSDataOutput(IDataOutput):
         'secret': str, # AWS client secret (optional, could be providad as env
             variable or default config file
             https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables)
+        'region': str, # AWS region (optional, could be providad as env
+            variable or default config file
+            https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables)
         'session_token': str, # AWS session token (optional, could be providad as env
             variable or default config file
             https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables)
+        'endpoint_url': str, # AWS endpoint url config param. Mostly for local and development setups
         'attributes': dict, # Fields in data input that shoul go as attributes
             (key) and the name of the property (value)
     }
@@ -36,10 +40,13 @@ class SQSDataOutput(IDataOutput):
 
         self._client_id = ''
         self._secret = ''
+        self._region = ''
+        self._endpoint_url = ''
         self._session_token = ''
         self._sqs_client = None
 
-        self.configure(config)
+        if config:
+            self.configure(config)
 
     def configure(self, config: dict):
         self.url = config.get('url')
@@ -49,7 +56,9 @@ class SQSDataOutput(IDataOutput):
         self.attributes = config.get('attributes', self.attributes)
         self._client_id = config.get('client_id', self._client_id)
         self._secret = config.get('secret', self._secret)
+        self._region = config.get('region', self._region)
         self._session_token = config.get('session_token', self._session_token)
+        self._endpoint_url = config.get('endpoint_url', self._endpoint_url)
 
     def send_one(self, data: dict) -> dict:
         """ Send one data entry to SQS.
@@ -174,10 +183,16 @@ class SQSDataOutput(IDataOutput):
         config = {}
         if self._client_id and self._secret:
             config['aws_access_key_id'] = self._client_id
-            config['aws_secret_access'] = self._secret
+            config['aws_secret_access_key'] = self._secret
+
+        if self._region:
+            config['region_name'] = self._region
 
         if self._session_token:
             config['aws_session_token'] = self._session_token
+
+        if self._endpoint_url:
+            config['endpoint_url'] = self._endpoint_url
 
         self._sqs_client = boto3.client('sqs', **config)
 
