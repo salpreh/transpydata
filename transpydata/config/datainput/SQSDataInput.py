@@ -32,6 +32,7 @@ class SQSDataInput(IDataInput):
             fields (only works if 'parse_body_as_json' is enabled).
             If not the result dict will contain one field 'message' and
             another 'attributes' with the data inside.
+        'delete_messages': bool # Delete messages after processing. Defaults to `true`.
     }
 
     """
@@ -46,6 +47,7 @@ class SQSDataInput(IDataInput):
         self.url = None
         self.flatten_attributes = False
         self.parse_body_as_json = False
+        self.delete_messages = True
 
         self._client_id = ''
         self._secret = ''
@@ -70,6 +72,7 @@ class SQSDataInput(IDataInput):
         self._region = config.get('region', self._region)
         self._session_token = config.get('session_token', self._session_token)
         self._endpoint_url = config.get('endpoint_url', self._endpoint_url)
+        self.delete_messages = config.get('delete_messages', self.delete_messages)
 
     def get_one(self, data: dict = {}) -> dict:
         sqs_req = {
@@ -82,6 +85,9 @@ class SQSDataInput(IDataInput):
         res = sqs_client.receive_message(**sqs_req)
 
         result = self._process_response(res)
+        if self.delete_messages:
+            self._delete_messages(res)
+
         if len(result): return result[0]
 
         return {}
@@ -106,6 +112,9 @@ class SQSDataInput(IDataInput):
                 continue
 
             msgs = self._process_response(sqs_res)
+            if self.delete_messages:
+                self._delete_messages(sqs_res)
+
             result.extend(msgs)
 
             res_messages = len(msgs)
@@ -125,6 +134,16 @@ class SQSDataInput(IDataInput):
             proc_res.append(self._process_msg(msg))
 
         return proc_res
+
+    def _delete_messages(self, sqs_res: dict):
+        sqs_client = self._get_sqs_client()
+        if not 'Messages' in sqs_res: return
+
+        for msg in sqs_res['Messages']:
+            sqs_client.delete_message(
+                QueueUrl = self.url,
+                ReceiptHandle = msg['ReceiptHandle']
+            )
 
     def _process_msg(self, msg: dict) -> dict:
         if not self.parse_body_as_json:
