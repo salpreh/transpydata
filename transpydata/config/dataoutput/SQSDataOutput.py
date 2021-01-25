@@ -114,19 +114,21 @@ class SQSDataOutput(IDataOutput):
 
     def _process_sqs_batch_result(self, result: dict) -> List[dict]:
         proc_result = []
-        for success_msg in result['Successful']:
-            proc_result.append({
-                'success': True,
-                'id': success_msg['Id'],
-                'message_id': success_msg['MessageId']
-            })
+        if 'Successful' in result:
+            for success_msg in result['Successful']:
+                proc_result.append({
+                    'success': True,
+                    'id': success_msg['Id'],
+                    'message_id': success_msg['MessageId']
+                })
 
-        for error_msg in result['Failed']:
-            proc_result.append({
-                'success': False,
-                'id': error_msg['Id'],
-                'error': '[{}] {}'.format(error_msg['Code'], error_msg['Message'])
-            })
+        if 'Failed' in result:
+            for error_msg in result['Failed']:
+                proc_result.append({
+                    'success': False,
+                    'id': error_msg['Id'],
+                    'error': '[{}] {}'.format(error_msg['Code'], error_msg['Message'])
+                })
 
         return proc_result
 
@@ -135,7 +137,7 @@ class SQSDataOutput(IDataOutput):
         for i, data_entry in enumerate(data, start=start_id):
             msg_data, attributes = self._process_data_and_attributes(data_entry)
             sqs_data['Entries'].append({
-                'Id': i,
+                'Id': str(i),
                 'MessageBody': json.dumps(msg_data),
                 'MessageAttributes': attributes
             })
