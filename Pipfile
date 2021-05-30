@@ -12,6 +12,7 @@ pylint = "*"
 mysql-connector-python = "*"
 requests = "*"
 clinlog = "*"
+boto3 = "*"
 
 [requires]
 python_version = "3"
