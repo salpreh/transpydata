@@ -149,11 +149,11 @@ class SQSDataInput(IDataInput):
         if not self.parse_body_as_json:
             return {
                 self.BODY_KEY: msg['Body'],
-                self.ATTR_KEY: self._process_attributes(msg['MessageAttributes'])
+                self.ATTR_KEY: self._process_attributes(msg.get('MessageAttributes', {}))
             }
 
         msg_body = json.loads(msg['Body'])
-        msg_attr = self._process_attributes(msg['MessageAttributes'])
+        msg_attr = self._process_attributes(msg.get('MessageAttributes', {}))
 
         proc_msg = {}
         if self.flatten_attributes:
